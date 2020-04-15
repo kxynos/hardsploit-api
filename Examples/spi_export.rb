@@ -119,12 +119,13 @@ HardsploitAPI.callbackProgress = method(:callbackProgress)
 HardsploitAPI.id = 0  # id of hardsploit 0 for the first one, 1 for the second etc
 
 begin
-HardsploitAPI.instance.initialize
+  HardsploitAPI.instance
 
 rescue HardsploitAPI::ERROR::HARDSPLOIT_NOT_FOUND
    puts "[-] HARDSPLOIT Not Found"
    exit(false)
 rescue HardsploitAPI::ERROR::USB_ERROR
+  # HardsploitAPI.reset_device_access
    puts "[-] USB ERRROR              "
    exit(false)
 end
@@ -156,11 +157,17 @@ puts "[+] " + $endTime_
 puts "[+] File saved in : " + $filepath 
 
 rescue HardsploitAPI::ERROR::HARDSPLOIT_NOT_FOUND
-   puts "[-] HARDSPLOIT Not Found\n"
-   close_file
-   exit(false)
+  puts "[-] HARDSPLOIT Not Found\n"
+  close_file
+  exit(-1)
 rescue HardsploitAPI::ERROR::USB_ERROR
-   puts "[-] USB ERRROR              "
-   close_file
-   exit(false)
+  # HardsploitAPI.reset_device_access
+  puts "[-] USB ERRROR              "
+  close_file
+  exit(-1)
+rescue SystemExit, Interrupt
+  puts "[!] Ended by user           "
+  close_file
+  # HardsploitAPI.reset_device_access
+  exit(-42)
 end

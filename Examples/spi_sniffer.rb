@@ -63,7 +63,7 @@ HardsploitAPI.callbackProgress = method(:callbackProgress)
 HardsploitAPI.id = 0  # id of hardsploit 0 for the first one, 1 for the second etc
 
 begin
-HardsploitAPI.instance.initialize
+HardsploitAPI.instance
 
 rescue HardsploitAPI::ERROR::HARDSPLOIT_NOT_FOUND
 	puts "[-] HARDSPLOIT Not Found"
@@ -106,7 +106,7 @@ def spiCustomCommand
 				puts i
 				#Ignore time out because we read in continous
 			rescue SystemExit, Interrupt
-				puts "Ended"
+				puts "[!] Ended by user "
 				exit
 		end
 	end
@@ -116,7 +116,7 @@ while true
 	char = STDIN.getch
 	puts char
 	if char ==  "\u0003"
-		puts "Finished"
+		puts "[+] Finished"
 		exit
 
 	elsif  char  == "i" then
