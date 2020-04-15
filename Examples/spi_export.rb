@@ -10,11 +10,12 @@
 
 #
 # SPI I/O Pins on Hardsploit
-# Assuming they are on default
-# Pin 01 : Cable Select
-# Pin 02 : Clock
-# Pin 03 : MOSI
-# Pin 04 : MISO
+# Assuming they are on default layout
+#
+# Pin 01 : Cable Select (CS)
+# Pin 02 : Clock (CLK)
+# Pin 03 : MOSI (SI)
+# Pin 04 : MISO (SO)
 #
 
 require 'io/console'
@@ -82,7 +83,7 @@ def callbackData(receiveData)
 	  	#p receiveData
 		$file.write(receiveData.pack("c*"))
 	else
-		puts "[-] ISSUE BECAUSE DATA IS NIL"
+		puts "[!] ISSUE BECAUSE DATA IS NIL"
 	end
 end
 
@@ -101,6 +102,15 @@ def callbackProgress(percent:,startTime:,endTime:)
 end
 
 puts " ** Hardsploit SPI export ** "
+
+case ARGV[0]
+when "-h"
+	puts "[!] Usage: ruby #{$0} [nofirmware|-h]"
+	exit
+when "--help"
+	puts "[!] Usage: ruby s#{$0} [nofirmware|-h]"
+	exit
+end
 
 HardsploitAPI.callbackInfo = method(:callbackInfo)
 HardsploitAPI.callbackData = method(:callbackData)
