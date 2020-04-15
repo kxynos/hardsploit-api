@@ -7,6 +7,17 @@
 #  License: GNU General Public License v3
 #  License URI: http://www.gnu.org/licenses/gpl.txt
 #===================================================
+
+#
+# SPI I/O Pins on Hardsploit
+# Assuming they are on default layout
+#
+# Pin 01 : Cable Select (CS)
+# Pin 02 : Clock (CLK)
+# Pin 03 : MOSI (SI)
+# Pin 04 : MISO (SO)
+#
+
 require 'io/console'
 require_relative '../HardsploitAPI/Core/HardsploitAPI'
 require_relative '../HardsploitAPI/Modules/SPI_SNIFFER/HardsploitAPI_SPI_SNIFFER'
