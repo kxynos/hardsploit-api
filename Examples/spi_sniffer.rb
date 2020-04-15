@@ -62,6 +62,16 @@ HardsploitAPI.callbackSpeedOfTransfert = method(:callbackSpeedOfTransfert)
 HardsploitAPI.callbackProgress = method(:callbackProgress)
 HardsploitAPI.id = 0  # id of hardsploit 0 for the first one, 1 for the second etc
 
+begin
+HardsploitAPI.instance.initialize
+
+rescue HardsploitAPI::ERROR::HARDSPLOIT_NOT_FOUND
+	puts "[-] HARDSPLOIT Not Found"
+	exit(false)
+rescue HardsploitAPI::ERROR::USB_ERROR
+	puts "[-] USB ERRROR              "
+	exit(false)
+end
 HardsploitAPI.instance.getAllVersions
 
 if ARGV[0] != "nofirmware" then

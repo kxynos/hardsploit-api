@@ -119,8 +119,7 @@ HardsploitAPI.callbackProgress = method(:callbackProgress)
 HardsploitAPI.id = 0  # id of hardsploit 0 for the first one, 1 for the second etc
 
 begin
-puts "[+] Number of hardsploit detected :#{HardsploitAPI.getNumberOfBoardAvailable}"
-HardsploitAPI.instance.getAllVersions
+HardsploitAPI.instance.initialize
 
 rescue HardsploitAPI::ERROR::HARDSPLOIT_NOT_FOUND
    puts "[-] HARDSPLOIT Not Found"
@@ -129,6 +128,9 @@ rescue HardsploitAPI::ERROR::USB_ERROR
    puts "[-] USB ERRROR              "
    exit(false)
 end
+
+puts "[+] Number of hardsploit detected :#{HardsploitAPI.getNumberOfBoardAvailable}"
+HardsploitAPI.instance.getAllVersions
 
 if ARGV[0] != "nofirmware" then
    puts "[+] Loading SPI firmware onto HARDSPLOIT"
