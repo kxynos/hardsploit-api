@@ -122,22 +122,25 @@ begin
   HardsploitAPI.instance
 
 rescue HardsploitAPI::ERROR::HARDSPLOIT_NOT_FOUND
-   puts "[-] HARDSPLOIT Not Found"
-   exit(false)
+  puts "[-] HARDSPLOIT Not Found"
+  exit(false)
 rescue HardsploitAPI::ERROR::USB_ERROR
   # HardsploitAPI.reset_device_access
-   puts "[-] USB ERRROR              "
-   exit(false)
+  puts "[-] USB ERRROR              "
+  exit(false)
 end
 
 puts "[+] Number of hardsploit detected :#{HardsploitAPI.getNumberOfBoardAvailable}"
 HardsploitAPI.instance.getAllVersions
 
-if ARGV[0] != "nofirmware" then
-   puts "[+] Loading SPI firmware onto HARDSPLOIT"
-   HardsploitAPI.instance.loadFirmware("SPI")
-   $percent_prv=0
-   puts "\n" # add a bracket and a new line 
+case ARGV[0]
+when "-nf" , "--nf", "nofirmware"
+	puts "[!] No FPGA firmware loaded (not always needed)"
+else 
+  puts "[+] Loading SPI firmware onto HARDSPLOIT"
+  HardsploitAPI.instance.loadFirmware("SPI")
+  $percent_prv=0
+  puts "\n" # add a new line 
 end
 
 begin
