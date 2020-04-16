@@ -48,11 +48,8 @@ end
 puts " ** Hardsploit SPI sniffer ** "
 
 case ARGV[0]
-when "-h"
-	puts "[!] Usage: ruby #{$0} [nofirmware | -h]"
-	exit
-when "--help"
-	puts "[!] Usage: ruby #{$0} [nofirmware | -h]"
+when "-h", "--help"
+	puts "[!] Usage: ruby #{$0} [nofirmware| -nf | --nf | -h]"
 	exit
 end
 

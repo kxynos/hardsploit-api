@@ -104,11 +104,8 @@ end
 puts " ** Hardsploit SPI export ** "
 
 case ARGV[0]
-when "-h"
+when "-h", "--help"
 	puts "[!] Usage: ruby #{$0} [nofirmware|-h]"
-	exit
-when "--help"
-	puts "[!] Usage: ruby s#{$0} [nofirmware|-h]"
 	exit
 end
 
