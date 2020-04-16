@@ -72,21 +72,21 @@ end
 HardsploitAPI.instance.getAllVersions
 
 interactive = true
-
-case ARGV[0]
-when "-ni" , "--ni"
-	puts "[!] Not interactive"
-	interactive = false
-when "-nf" , "--nf", "nofirmware"
-	puts "[!] No FPGA firmware loaded (not always needed)"
-else 
-	puts "[!] Loading SPI sniffer firmware loaded to FPGA"
-	HardsploitAPI.instance.loadFirmware("SPI_SNIFFER")
+while opt = ARGV.shift do
+	puts case opt
+		when "-ni" , "--ni" then
+			interactive = false
+			puts "[!] Not interactive"
+		when "-nf" , "--nf", "nofirmware" then
+			puts "[!] No FPGA firmware loaded (not always needed)"
+		else 
+			puts "[!] Loading SPI sniffer firmware loaded to FPGA"
+			HardsploitAPI.instance.loadFirmware("SPI_SNIFFER")
+		end
 end
 
 @spi = HardsploitAPI_SPI_SNIFFER.new(mode:0,sniff:HardsploitAPI::SPISniffer::MOSI)  # MISO MOSI MISO_MOSI
 puts "[+] SPI Sniffing will start now. "
-puts "[!] Sniffing starts after pressing the key i. "
 sleep(0.5)
 def spiCustomCommand
 	i = '.'
@@ -119,6 +119,13 @@ def spiCustomCommand
  end
 
 while true
+	if !interactive then
+		spiCustomCommand
+		break
+	else
+		puts "[!] Sniffing starts after pressing the key i. "
+
+	end
 	char = STDIN.getch
 	puts char
 	if char ==  "\u0003"
