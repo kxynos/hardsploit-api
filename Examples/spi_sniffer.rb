@@ -71,12 +71,12 @@ rescue HardsploitAPI::ERROR::USB_ERROR
 end
 HardsploitAPI.instance.getAllVersions
 
-interactive = True
+interactive = true
 
 case ARGV[0]
 when "-ni" , "--ni"
 	puts "[!] Not interactive"
-	interactive = False
+	interactive = false
 when "-nf" , "--nf", "nofirmware"
 	puts "[!] No FPGA firmware loaded (not always needed)"
 else 
