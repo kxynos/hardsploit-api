@@ -12,8 +12,8 @@
 # SPI I/O Pins on Hardsploit
 # Assuming they are on default layout
 #
-# Pin 01 : Cable Select (CS)
-# Pin 02 : Clock (CLK)
+# Pin 01 : Clock (CLK)
+# Pin 02 : Cable Select (CS)
 # Pin 03 : MOSI (SI)
 # Pin 04 : MISO (SO)
 #
