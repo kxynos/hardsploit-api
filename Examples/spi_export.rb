@@ -12,12 +12,12 @@
 # SPI I/O Pins on Hardsploit
 # Assuming they are on default layout
 #
-# Pin 01 : Cable Select (CS)
-# Pin 02 : Clock (CLK)
-# Pin 03 : MOSI (SI)
-# Pin 04 : MISO (SO)
+# Pin A0 : Clock (CLK)
+# Pin A1 : Cable Select (CS)
+# Pin A2 : MOSI (SI)
+# Pin A3 : MISO (SO)
 #
-
+require 'optparse'
 require 'io/console'
 require 'logger'
 require_relative '../HardsploitAPI/Core/HardsploitAPI'
@@ -51,7 +51,7 @@ $percent_prv = 0
     # 'spi_total_size' => 8388608,
       'start_address' => 0,
       'spi_mode' => 0,
-      'spi_speed' => '15.00',
+      'spi_speed' => '5.00',
       'spi_command' => 3
     }
 
@@ -81,7 +81,7 @@ def callbackData(receiveData)
 	if receiveData != nil then
 		#puts "received #{receiveData.size}"
 	  	#p receiveData
-		$file.write(receiveData.pack("c*"))
+		$file.write(receiveData.pack("C*"))
 	else
 		puts "[!] ISSUE BECAUSE DATA IS NIL"
 	end
@@ -103,10 +103,32 @@ end
 
 puts " ** Hardsploit SPI export ** "
 
-case ARGV[0]
-when "-h", "--help"
-	puts "[!] Usage: ruby #{$0} [nofirmware|-nf|-h|]"
-	exit
+begin
+  @options = {}
+  @options[:load_firmware] = true
+  OptionParser.new do |opts|
+    opts.banner =  "usage: #{$0} [options]"
+
+    opts.on("-p [PINS]", "--pins [PINS]",["0p3","4p7","default"], "Pick which pins to use. [0p3, 4p7, default]") do |pins_|
+      @options[:pins] = pins_
+      puts pins_.nil?
+      if pins_.nil? then
+        puts "[-] PINS needs a correct argument."
+        exit(false)
+      end
+    end
+    opts.on("-n", "--nofirmware", "Don't automatically load the FPGA firmware (load at least once after powering on or changing functionality)") do
+      @options[:load_firmware] = false
+      puts "[!] No FPGA firmware will be loaded (not always needed, but if you get errors try loading.)"
+    end
+    opts.on_tail("-h", "--help", "Show this message") do
+      puts opts
+      exit
+    end
+  end.parse!
+rescue OptionParser::InvalidOption
+  puts "Incorrect option provided"
+  exit(false)
 end
 
 HardsploitAPI.callbackInfo = method(:callbackInfo)
@@ -127,34 +149,73 @@ rescue HardsploitAPI::ERROR::USB_ERROR
   exit(false)
 end
 
+if @options[:load_firmware] then
+  puts "[!] Loading SPI firmware loaded to FPGA"
+  HardsploitAPI.instance.loadFirmware("SPI")
+  $percent_prv=0
+  puts "\n" # add a bracket and a new line 
+end
+
 puts "[+] Number of hardsploit detected :#{HardsploitAPI.getNumberOfBoardAvailable}"
 HardsploitAPI.instance.getAllVersions
 
-case ARGV[0]
-when "-nf" , "--nf", "nofirmware"
-	puts "[!] No FPGA firmware loaded (not always needed)"
-else 
-  puts "[+] Loading SPI firmware onto HARDSPLOIT"
-  HardsploitAPI.instance.loadFirmware("SPI")
-  $percent_prv=0
-  puts "\n" # add a new line 
+# Default wiring
+# Actuall mapping 0-CLK, 1-CS, 2-SI, 3-SO
+# !! Warning: avoid moving CLK too close to SO !!
+crossvalue = Array.new
+for i in 0..63
+  crossvalue.push i
 end
 
+case @options[:pins]
+when "0p3" #works
+  puts "[!] Custom pins based on Saleae logic cable (0 to 3)"
+  puts "    Key: Function: Hardsploit pin - Saleae Pro Pin"
+  puts "\tSI: A0 - pin 0 | CLK: A1 - pin 1"
+  puts "\tCS: A2 - pin 2 | SO: A3 - pin 3" 
+  crossvalue[0] = 2
+  crossvalue[1] = 0
+  crossvalue[2] = 1
+  crossvalue[3] = 3
+  HardsploitAPI.instance.setWiringLeds(value:0x000000000000000F) # highlight the 4 we picked
+when "4p7" # works
+  puts "[!] Custom pins based on Saleae logic cable (4 to 7)"
+  puts "\tKey: Function: Hardsploit pin - Saleae Pro Pin"
+  puts "\tSI: A7 - pin 4 | CLK: A6 - pin 5" 
+  puts "\tCS: A5 - pin 6 | SO: A4 - pin 7" 
+  crossvalue[0] = 4
+  crossvalue[1] = 5
+  crossvalue[2] = 6
+  crossvalue[3] = 7
+
+  crossvalue[4] = 2
+  crossvalue[5] = 0
+  crossvalue[6] = 1
+  crossvalue[7] = 3
+  HardsploitAPI.instance.setWiringLeds(value:0x00000000000000F0) # highlight the 4 we picked
+when "default"
+  puts "[!] Default pin layout CLK: A0, CS: A1, MOSI: A2, MISO: A3"
+end
+
+
 begin
+  HardsploitAPI.callbackProgress = method(:callbackProgress)
+  select_export_file
 
-HardsploitAPI.callbackProgress = method(:callbackProgress)
-select_export_file
+  HardsploitAPI.instance.setCrossWiring(value:crossvalue)
+  puts "[+] HARDSPLOIT SPI any rewiring complete "
 
-@spi = HardsploitAPI_SPI.new(speed:@speeds[@chip_settings_['spi_speed']],mode:@chip_settings_['spi_mode'])
+  @spi = HardsploitAPI_SPI.new(speed:@speeds[@chip_settings_['spi_speed']],mode:@chip_settings_['spi_mode'])
+  
+  puts "[+] HARDSPLOIT SPI export started "
+  @spi.spi_Generic_Dump(readSpiCommand:@chip_settings_['spi_command'], startAddress:@chip_settings_['start_address'],
+  stopAddress:@chip_settings_['spi_total_size']-1,sizeMax:@chip_settings_['spi_total_size'])
 
-puts "[+] HARDSPLOIT SPI export started "
-@spi.spi_Generic_Dump(readSpiCommand:@chip_settings_['spi_command'], startAddress:@chip_settings_['start_address'],stopAddress:@chip_settings_['spi_total_size']-1,sizeMax:@chip_settings_['spi_total_size'])
+  close_file
 
-close_file
-
-puts "\n[+] HARDSPLOIT SPI export completed successfully"
-puts "[+] " + $endTime_ 
-puts "[+] File saved in : " + $filepath 
+  puts "\n[+] HARDSPLOIT SPI export completed successfully"
+  puts "[+] " + $endTime_ 
+  puts "[+] File saved in : " + $filepath 
 
 rescue HardsploitAPI::ERROR::HARDSPLOIT_NOT_FOUND
   puts "[-] HARDSPLOIT Not Found\n"
@@ -171,3 +232,4 @@ rescue SystemExit, Interrupt
   # HardsploitAPI.reset_device_access
   exit(-42)
 end
+
