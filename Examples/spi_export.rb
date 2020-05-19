@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 #===================================================
 #  Coded by Konstantinos Xynos (2020)
-#  Version: 1.0.5
+#  Version: 1.0.6
 #  Based on Hardsploit API - By Opale Security
 #  www.opale-security.com || www.hardsploit.io
 #  License: GNU General Public License v3
@@ -52,7 +52,8 @@ $percent_prv = 0
       'start_address' => 0,
       'spi_mode' => 0,
       'spi_speed' => '5.00',
-      'spi_command' => 3
+      'spi_command' => 3,
+      'spi_stop_address' => 0
     }
 
 def select_export_file
@@ -104,14 +105,18 @@ end
 puts " ** Hardsploit SPI export ** "
 
 begin
+  @params = {}
+
   @options = {}
   @options[:load_firmware] = true
+  @options[:address_start] = @chip_settings_['start_address']
+  @options[:address_length] = nil
   OptionParser.new do |opts|
     opts.banner =  "usage: #{$0} [options]"
 
     opts.on("-p [PINS]", "--pins [PINS]",["0p3","4p7","default"], "Pick which pins to use. [0p3, 4p7, default]") do |pins_|
       @options[:pins] = pins_
-      puts pins_.nil?
+      #puts pins_.nil?
       if pins_.nil? then
         puts "[-] PINS needs a correct argument."
         exit(false)
@@ -120,6 +125,15 @@ begin
     opts.on("-n", "--nofirmware", "Don't automatically load the FPGA firmware (load at least once after powering on or changing functionality)") do
       @options[:load_firmware] = false
       puts "[!] No FPGA firmware will be loaded (not always needed, but if you get errors try loading.)"
+    end
+    opts.on("-s [address]", "--start_address [address]", OptionParser::DecimalInteger, "Set the start address.") do | address_start_|
+      @options[:address_start] = address_start_
+      puts "[!] Start address changed to: #{address_start_}" 
+    end
+    opts.on("-l [length]", "--address_length [length]", OptionParser::DecimalInteger, "Set the length.") do |address_length_|
+      p address_length_
+      @options[:address_length] = address_length_
+      puts "[!] Address length set to: #{address_length_}"
     end
     opts.on_tail("-h", "--help", "Show this message") do
       puts opts
@@ -206,10 +220,17 @@ begin
   puts "[+] HARDSPLOIT SPI any rewiring complete "
 
   @spi = HardsploitAPI_SPI.new(speed:@speeds[@chip_settings_['spi_speed']],mode:@chip_settings_['spi_mode'])
+
+  @chip_settings_['start_address']=@options[:address_start]
   
+  if @options[:address_length].nil? then
+    @chip_settings_['spi_stop_address']= @chip_settings_['spi_total_size'] 
+  else
+    @chip_settings_['spi_stop_address']= @chip_settings_['start_address'] + @options[:address_length]
+  end
   puts "[+] HARDSPLOIT SPI export started "
   @spi.spi_Generic_Dump(readSpiCommand:@chip_settings_['spi_command'], startAddress:@chip_settings_['start_address'],
-  stopAddress:@chip_settings_['spi_total_size']-1,sizeMax:@chip_settings_['spi_total_size'])
+  stopAddress:@chip_settings_['spi_stop_address']-1,sizeMax:@chip_settings_['spi_total_size'])
 
   close_file
 
