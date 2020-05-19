@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 #===================================================
 #  Coded by Konstantinos Xynos (2020)
-#  Version: 1.0
+#  Version: 1.0.5
 #  Based on Hardsploit API - By Opale Security
 #  www.opale-security.com || www.hardsploit.io
 #  License: GNU General Public License v3
@@ -168,7 +168,7 @@ for i in 0..63
 end
 
 case @options[:pins]
-when "0p3" #works
+when "0p3" 
   puts "[!] Custom pins based on Saleae logic cable (0 to 3)"
   puts "    Key: Function: Hardsploit pin - Saleae Pro Pin"
   puts "\tSI: A0 - pin 0 | CLK: A1 - pin 1"
@@ -178,7 +178,7 @@ when "0p3" #works
   crossvalue[2] = 1
   crossvalue[3] = 3
   HardsploitAPI.instance.setWiringLeds(value:0x000000000000000F) # highlight the 4 we picked
-when "4p7" # works
+when "4p7" 
   puts "[!] Custom pins based on Saleae logic cable (4 to 7)"
   puts "\tKey: Function: Hardsploit pin - Saleae Pro Pin"
   puts "\tSI: A7 - pin 4 | CLK: A6 - pin 5" 
